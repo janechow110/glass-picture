@@ -9,7 +9,7 @@
       margin: 0;
       padding: 0;
       box-sizing: border-box;
-      font-family: "Microsoft YaHei", sans-serif;
+      font-family: "SF Pro Text", "Microsoft YaHei", sans-serif;
     }
     body {
       background: #f7f8fa;
@@ -21,7 +21,49 @@
       font-size: 22px;
       margin-bottom: 20px;
       color: #333;
+      font-weight: 500;
     }
+
+    /* 搜索框容器 */
+    .search-wrapper {
+      position: relative;
+      flex: 1;
+      min-width: 220px;
+    }
+    #search {
+      width: 100%;
+      height: 44px;
+      padding: 0 44px 0 14px;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      font-size: 15px;
+      outline: none;
+      background: #fff;
+    }
+    #search:focus {
+      border-color: #ccc;
+    }
+
+    /* 苹果风格线性相机图标 */
+    .camera-icon {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 20px;
+      height: 20px;
+      stroke: #999;
+      stroke-width: 1.8;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      fill: none;
+      cursor: pointer;
+      transition: stroke 0.2s;
+    }
+    .camera-icon:hover {
+      stroke: #333;
+    }
+
     .tool-bar {
       display: flex;
       gap: 10px;
@@ -29,38 +71,33 @@
       flex-wrap: wrap;
       align-items: center;
     }
-    #search {
-      flex: 1;
-      padding: 10px 14px;
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      outline: none;
-    }
     button {
-      padding: 10px 16px;
-      border-radius: 8px;
+      height: 44px;
+      padding: 0 16px;
+      border-radius: 12px;
       border: none;
-      background: #4e6ef2;
-      color: white;
-      cursor: pointer;
-    }
-    .img-search-btn {
-      font-size: 18px;
-      padding: 10px 12px;
       background: #fff;
       color: #333;
-      border: 1px solid #ddd;
+      border: 1px solid #e5e7eb;
+      cursor: pointer;
+      font-size: 15px;
     }
+    button.primary {
+      background: #007aff;
+      color: #fff;
+      border: none;
+    }
+
     .gallery {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
       gap: 12px;
     }
     .item {
-      background: white;
-      border-radius: 10px;
+      background: #fff;
+      border-radius: 12px;
       overflow: hidden;
-      box-shadow: 0 2px 6px #00000008;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.05);
     }
     .item img {
       width: 100%;
@@ -76,12 +113,20 @@
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      color: #333;
     }
     .empty {
       grid-column: 1/-1;
       text-align: center;
       padding: 60px 0;
       color: #999;
+    }
+    .tip {
+      grid-column: 1/-1;
+      text-align: center;
+      padding: 30px 0;
+      color: #666;
+      font-size: 15px;
     }
   </style>
 </head>
@@ -90,10 +135,16 @@
   <div class="title">眼镜款式管理</div>
 
   <div class="tool-bar">
-    <input type="text" id="search" placeholder="关键词搜索">
+    <div class="search-wrapper">
+      <input type="text" id="search" placeholder="搜索眼镜名称">
+      <!-- 苹果风格相机图标 -->
+      <svg class="camera-icon" id="searchByImg" viewBox="0 0 24 24">
+        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+        <circle cx="12" cy="13" r="4"></circle>
+      </svg>
+    </div>
     <button id="searchBtn">搜索</button>
-    <button id="upload">上传图片</button>
-    <button class="img-search-btn" id="searchByImg">📷</button>
+    <button class="primary" id="upload">上传图片</button>
   </div>
 
   <input type="file" id="fileInput" accept="image/*" multiple hidden>
@@ -109,7 +160,7 @@
     const searchByImg = document.getElementById('searchByImg');
     const imgSearchInput = document.getElementById('imgSearchInput');
 
-    // 读取本地眼镜数据
+    // 读取本地数据
     function getGlasses() {
       return JSON.parse(localStorage.getItem('glasses') || '[]');
     }
@@ -119,19 +170,19 @@
       localStorage.setItem('glasses', JSON.stringify(arr));
     }
 
-    // 渲染列表
+    // 正常渲染
     function render(key = '') {
       const data = getGlasses();
+      const lowerKey = key.toLowerCase().trim();
       const filtered = data.filter(item =>
-        item.name?.toLowerCase().includes(key.toLowerCase())
+        item.name?.toLowerCase().includes(lowerKey)
       );
-      list.innerHTML = '';
 
+      list.innerHTML = '';
       if (filtered.length === 0) {
-        list.innerHTML = '<div class="empty">暂无眼镜</div>';
+        list.innerHTML = `<div class="empty">未找到相关眼镜</div>`;
         return;
       }
-
       filtered.forEach(item => {
         const div = document.createElement('div');
         div.className = 'item';
@@ -145,7 +196,32 @@
       });
     }
 
-    // 图片转Base64
+    // 以图搜图专用渲染
+    function renderImageSearchResult(fileName) {
+      const data = getGlasses();
+      const key = fileName.split('.')[0].toLowerCase();
+      const matched = data.filter(item =>
+        item.name.toLowerCase().includes(key)
+      );
+      list.innerHTML = '';
+      if (matched.length === 0) {
+        list.innerHTML = `<div class="tip">未搜索到相似的眼镜款式</div>`;
+        return;
+      }
+      matched.forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'item';
+        div.innerHTML = `
+          <img src="${item.src}" alt="眼镜">
+          <div class="info">
+            <div class="name">${item.name}</div>
+          </div>
+        `;
+        list.appendChild(div);
+      });
+    }
+
+    // 转Base64
     function toBase64(file) {
       return new Promise(resolve => {
         const reader = new FileReader();
@@ -154,7 +230,7 @@
       });
     }
 
-    // 上传图片
+    // 上传
     upload.onclick = () => fileInput.click();
     fileInput.onchange = async (e) => {
       const files = Array.from(e.target.files);
@@ -174,12 +250,12 @@
     searchBtn.onclick = doSearch;
     search.oninput = doSearch;
 
-    // 以图搜图（前端简易匹配：上传图片后展示所有，可后续对接AI接口）
+    // 以图搜图（根据文件名匹配）
     searchByImg.onclick = () => imgSearchInput.click();
-    imgSearchInput.onchange = async (e) => {
-      if (e.target.files.length === 0) return;
-      alert('正在使用以图搜图：匹配相似眼镜');
-      render('');
+    imgSearchInput.onchange = (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      renderImageSearchResult(file.name);
     };
 
     render();
