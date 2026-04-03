@@ -3,412 +3,290 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>眼镜款式管理 - 仿 Firmoo 搜索体验</title>
+  <title>眼镜款式管理</title>
   <style>
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
-      font-family: "SF Pro Display", -apple-system, BlinkMacSystemFont, "Microsoft YaHei", sans-serif;
+      font-family: "SF Pro Text", "Microsoft YaHei", sans-serif;
     }
     body {
       background: #f7f8fa;
       padding: 0;
-      margin: 0;
     }
-    /* 顶部导航栏（参考 Firmoo） */
-    .header-nav {
-      padding: 12px 20px;
-      background: #fff;
-      border-bottom: 1px solid #e5e7eb;
-      display: flex;
-      align-items: center;
-      gap: 16px;
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 20px;
     }
-    .logo {
-      font-size: 18px;
-      font-weight: 600;
+    .title {
+      font-size: 22px;
+      margin-bottom: 16px;
       color: #333;
-    }
-    .nav-links {
-      display: flex;
-      gap: 16px;
-      flex: 1;
-    }
-    .nav-link {
-      font-size: 14px;
-      color: #666;
-      text-decoration: none;
-      cursor: pointer;
-    }
-    .nav-link.active {
-      color: #007aff;
       font-weight: 500;
     }
-    .nav-actions {
-      display: flex;
-      gap: 12px;
-      align-items: center;
+
+    /* 搜索框 */
+    .search-group {
+      position: relative;
+      margin-bottom: 14px;
     }
-    .icon {
-      font-size: 16px;
-      color: #666;
-      cursor: pointer;
+    #search {
+      width: 100%;
+      height: 46px;
+      padding: 0 50px 0 16px;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      font-size: 15px;
+      outline: none;
+      background: #fff;
+    }
+    #search:focus {
+      border-color: #007aff;
     }
 
-    /* 搜索区域 */
-    .search-section {
-      padding: 20px;
-      background: #fff;
-      margin-bottom: 20px;
-    }
-    .search-wrapper {
-      position: relative;
-      max-width: 800px;
-      margin: 0 auto;
-    }
-    #searchInput {
-      width: 100%;
-      height: 48px;
-      padding: 0 16px;
-      border: 1px solid #e5e7eb;
-      border-radius: 8px;
-      font-size: 16px;
-      outline: none;
-      background: #fafafa;
-    }
-    #searchInput:focus {
-      border-color: #007aff;
-      background: #fff;
-    }
-    .search-btn {
+    /* 以图搜图图标（搜索框内） */
+    .camera-btn {
       position: absolute;
-      right: 8px;
+      right: 16px;
       top: 50%;
       transform: translateY(-50%);
-      height: 36px;
-      padding: 0 20px;
-      background: #007aff;
-      color: #fff;
-      border: none;
-      border-radius: 6px;
-      font-size: 14px;
+      width: 22px;
+      height: 22px;
+      stroke: #888;
+      stroke-width: 1.8;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      fill: none;
       cursor: pointer;
+    }
+    .camera-btn:hover {
+      stroke: #007aff;
     }
 
-    /* 类目标签（All/Products/Help 等） */
-    .category-tags {
+    /* 工具栏 */
+    .toolbar {
       display: flex;
-      gap: 12px;
-      max-width: 800px;
-      margin: 16px auto 0;
-      padding-bottom: 8px;
-      overflow-x: auto;
+      gap: 10px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    .category {
+      display: flex;
+      gap: 10px;
+      flex: 1;
+      flex-wrap: wrap;
     }
     .tag {
-      padding: 6px 12px;
+      padding: 8px 14px;
+      border-radius: 10px;
+      background: #fff;
+      border: 1px solid #e5e7eb;
       font-size: 14px;
-      color: #666;
-      background: #f2f2f2;
-      border-radius: 16px;
       cursor: pointer;
-      white-space: nowrap;
     }
     .tag.active {
       background: #007aff;
       color: #fff;
-    }
-
-    /* 热门搜索 */
-    .popular-searches {
-      max-width: 800px;
-      margin: 0 auto 20px;
-      padding: 0 20px;
-    }
-    .popular-title {
-      font-size: 14px;
-      color: #333;
-      margin-bottom: 8px;
-      font-weight: 500;
-    }
-    .tag-group {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-    }
-    .popular-tag {
-      padding: 6px 12px;
-      font-size: 13px;
-      color: #666;
-      background: #fff;
-      border: 1px solid #e5e7eb;
-      border-radius: 16px;
-      cursor: pointer;
-    }
-    .popular-tag:hover {
       border-color: #007aff;
     }
-
-    /* 内容容器 */
-    .container {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 0 20px 40px;
+    #uploadBtn {
+      padding: 0 18px;
+      height: 42px;
+      border-radius: 10px;
+      background: #007aff;
+      color: #fff;
+      border: none;
+      cursor: pointer;
     }
 
-    /* 结果网格（仿 Firmoo 商品陈列） */
-    .results-grid {
+    /* 网格 */
+    .grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-      gap: 20px;
+      grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+      gap: 14px;
     }
-    .product-card {
+    .card {
       background: #fff;
-      border-radius: 8px;
+      border-radius: 12px;
       overflow: hidden;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-      transition: transform 0.2s;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.04);
     }
-    .product-card:hover {
-      transform: translateY(-3px);
-    }
-    .product-img {
+    .card img {
       width: 100%;
-      height: 160px;
+      height: 150px;
       object-fit: cover;
       display: block;
     }
-    .product-info {
-      padding: 12px;
-    }
-    .product-name {
+    .card .name {
+      padding: 10px;
       font-size: 14px;
       color: #333;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
     }
-    .product-sku {
-      font-size: 12px;
-      color: #999;
-      margin-top: 4px;
-    }
 
-    /* 无结果提示（小文字报错，参考参考图） */
-    .no-results {
-      grid-column: 1 / -1;
+    /* 无结果提示 */
+    .no-result {
+      grid-column: 1/-1;
       text-align: center;
-      padding: 40px 20px;
+      padding: 40px 0;
       color: #ff4d4f;
       font-size: 14px;
     }
-    .no-results .query {
-      font-weight: 500;
-    }
-
-    /* 空状态/默认状态 */
-    .empty-state {
-      grid-column: 1 / -1;
+    .empty {
+      grid-column: 1/-1;
       text-align: center;
-      padding: 60px 20px;
+      padding: 50px 0;
       color: #999;
-      font-size: 15px;
     }
   </style>
 </head>
+
 <body>
-  <!-- 顶部导航栏 -->
-  <div class="header-nav">
-    <div class="logo">FIRM</div>
-    <div class="nav-links">
-      <div class="nav-link active">Glasses</div>
-      <div class="nav-link">Sunglasses</div>
-      <div class="nav-link">Lenses</div>
-      <div class="nav-link">Featured</div>
-      <div class="nav-link">Shop By</div>
-      <div class="nav-link">Deals</div>
-    </div>
-    <div class="nav-actions">
-      <div class="icon">×</div>
-      <div class="icon">👤</div>
-      <div class="icon">❤️</div>
-      <div class="icon">📦(3)</div>
-      <div class="icon">Help</div>
-      <div class="icon">USD($)</div>
-    </div>
-  </div>
-
-  <!-- 搜索与类目区域 -->
-  <div class="search-section">
-    <div class="search-wrapper">
-      <input type="text" id="searchInput" placeholder="Search by type..." value="">
-      <button class="search-btn" id="searchBtn">Search</button>
-    </div>
-
-    <!-- 类目标签：All/Products/Help/Articles/Orders -->
-    <div class="category-tags" id="categoryTags">
-      <div class="tag active" data-type="all">All</div>
-      <div class="tag" data-type="product">Products</div>
-      <div class="tag" data-type="help">Help</div>
-      <div class="tag" data-type="article">Articles</div>
-      <div class="tag" data-type="order">Orders</div>
-    </div>
-  </div>
-
-  <!-- 热门搜索 -->
-  <div class="popular-searches">
-    <div class="popular-title">Popular Searches:</div>
-    <div class="tag-group">
-      <div class="popular-tag">Glasses 🔥</div>
-      <div class="popular-tag">Judy 🔥</div>
-      <div class="popular-tag">Heart 🔥</div>
-      <div class="popular-tag">Baddie</div>
-      <div class="popular-tag">oval</div>
-      <div class="popular-tag">Cat eye</div>
-      <div class="popular-tag">Punk</div>
-      <div class="popular-tag">tr</div>
-      <div class="popular-tag">Clip on</div>
-      <div class="popular-tag">pd</div>
-    </div>
-  </div>
-
-  <!-- 主内容区 -->
   <div class="container">
-    <div class="results-grid" id="resultsGrid"></div>
+    <div class="title">眼镜款式管理</div>
+
+    <div class="search-group">
+      <input type="text" id="search" placeholder="搜索眼镜名称">
+      <svg class="camera-btn" id="searchByImg" viewBox="0 0 24 24">
+        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+        <circle cx="12" cy="13" r="4"></circle>
+      </svg>
+    </div>
+
+    <div class="toolbar">
+      <div class="category">
+        <div class="tag active" data-cate="all">All</div>
+        <div class="tag" data-cate="product">Product</div>
+        <div class="tag" data-cate="help">Help</div>
+      </div>
+      <button id="uploadBtn">上传图片</button>
+    </div>
+
+    <div class="grid" id="list"></div>
   </div>
 
-  <!-- 隐藏的文件上传输入框 -->
   <input type="file" id="fileInput" accept="image/*" multiple hidden>
   <input type="file" id="imgSearchInput" accept="image/*" hidden>
 
   <script>
-    // 模拟原始眼镜数据（参考 Firmoo 爆款列表）
-    const mockProducts = [
-      { name: "LKFS4126R", type: "product", src: "https://picsum.photos/seed/glass1/180/160" },
-      { name: "S939", type: "product", src: "https://picsum.photos/seed/glass2/180/160" },
-      { name: "Grace001", type: "product", src: "https://picsum.photos/seed/glass3/180/160" },
-      { name: "TR77610", type: "product", src: "https://picsum.photos/seed/glass4/180/160" },
-      { name: "Lindsay20516", type: "product", src: "https://picsum.photos/seed/glass5/180/160" },
-      { name: "TM39028", type: "product", src: "https://picsum.photos/seed/glass6/180/160" },
-      { name: "如何选择镜框尺寸", type: "article", src: "https://picsum.photos/seed/guide1/180/160" },
-      { name: "PD测量指南", type: "help", src: "https://picsum.photos/seed/guide2/180/160" },
-      { name: "镜片保养攻略", type: "article", src: "https://picsum.photos/seed/guide3/180/160" },
-    ];
+    const search = document.getElementById('search');
+    const searchByImg = document.getElementById('searchByImg');
+    const uploadBtn = document.getElementById('uploadBtn');
+    const fileInput = document.getElementById('fileInput');
+    const imgSearchInput = document.getElementById('imgSearchInput');
+    const list = document.getElementById('list');
+    const tags = document.querySelectorAll('.tag');
 
-    // 本地存储：如果没有数据则初始化
-    function initLocalStorage() {
-      if (!localStorage.getItem('glasses')) {
-        localStorage.setItem('glasses', JSON.stringify(mockProducts));
-      }
-    }
-    initLocalStorage();
+    let currentCate = 'all';
+    let currentKeyword = '';
 
-    // 全局状态
-    let currentCategory = "all"; // 当前类目：all/product/help/article/order
-    let currentQuery = ""; // 当前搜索关键词
-
-    // DOM 元素
-    const searchInput = document.getElementById('searchInput');
-    const searchBtn = document.getElementById('searchBtn');
-    const resultsGrid = document.getElementById('resultsGrid');
-    const categoryTags = document.getElementById('categoryTags');
-
-    // 获取数据
-    function getGlasses() {
+    // 读取
+    function getAll() {
       return JSON.parse(localStorage.getItem('glasses') || '[]');
     }
 
-    // 渲染逻辑
-    function renderResults(query = "") {
-      currentQuery = query.trim();
-      const data = getGlasses();
-      let filtered = [];
+    // 保存
+    function save(arr) {
+      localStorage.setItem('glasses', JSON.stringify(arr));
+    }
 
-      // 1. 按类目筛选
-      if (currentCategory === "all") {
-        filtered = [...data]; // 全部
-      } else {
-        filtered = data.filter(item => item.type === currentCategory);
+    // 渲染
+    function render() {
+      const data = getAll();
+      const keyword = currentKeyword.toLowerCase().trim();
+      
+      let filtered = data;
+
+      // 类目筛选
+      if (currentCate !== 'all') {
+        filtered = filtered.filter(item => item.type === currentCate);
       }
 
-      // 2. 按关键词筛选（搜索框为空时不过滤）
-      if (currentQuery) {
-        filtered = filtered.filter(item => 
-          item.name.toLowerCase().includes(currentQuery.toLowerCase())
+      // 关键词搜索
+      if (keyword) {
+        filtered = filtered.filter(item =>
+          item.name?.toLowerCase().includes(keyword)
         );
       }
 
-      // 3. 渲染结果
-      resultsGrid.innerHTML = "";
+      list.innerHTML = '';
+      if (data.length === 0) {
+        list.innerHTML = '<div class="empty">暂无眼镜，可上传</div>';
+        return;
+      }
       if (filtered.length === 0) {
-        // 无结果：显示参考图样式的小文字报错
-        resultsGrid.innerHTML = `
-          <div class="no-results">
-            Oops! no results were found for "<span class="query">${currentQuery}</span>"
-          </div>
-        `;
+        list.innerHTML = `<div class="no-result">未找到：${currentKeyword}</div>`;
         return;
       }
 
-      // 有结果：渲染商品卡片
       filtered.forEach(item => {
-        const card = document.createElement('div');
-        card.className = "product-card";
-        card.innerHTML = `
-          <img src="${item.src}" class="product-img" alt="${item.name}">
-          <div class="product-info">
-            <div class="product-name">${item.name}</div>
-            ${item.type === "product" ? `<div class="product-sku">SKU</div>` : ""}
-          </div>
+        const c = document.createElement('div');
+        c.className = 'card';
+        c.innerHTML = `
+          <img src="${item.src}" alt="">
+          <div class="name">${item.name}</div>
         `;
-        resultsGrid.appendChild(card);
+        list.appendChild(c);
       });
     }
 
-    // 渲染默认状态（搜索框为空且无搜索行为时）
-    function renderEmptyState() {
-      resultsGrid.innerHTML = '<div class="empty-state">请输入关键词搜索或选择类目</div>';
+    // 转Base64
+    function toBase64(file) {
+      return new Promise(res => {
+        const r = new FileReader();
+        r.onload = e => res(e.target.result);
+        r.readAsDataURL(file);
+      });
     }
 
-    // 初始化：监听搜索
-    searchBtn.addEventListener('click', () => {
-      renderResults(searchInput.value);
-    });
-    searchInput.addEventListener('keypress', (e) => {
-      if (e.key === 'Enter') renderResults(searchInput.value);
-    });
-
-    // 监听类目切换
-    categoryTags.addEventListener('click', (e) => {
-      if (e.target.classList.contains('tag')) {
-        // 更新类目状态
-        document.querySelectorAll('.tag').forEach(tag => tag.classList.remove('active'));
-        e.target.classList.add('active');
-        currentCategory = e.target.dataset.type;
-        
-        // 重新渲染（保留当前搜索词，无词则显示默认）
-        if (currentQuery) {
-          renderResults(currentQuery);
-        } else {
-          renderEmptyState(); // 无搜索词时回到空状态
-        }
+    // 上传
+    uploadBtn.onclick = () => fileInput.click();
+    fileInput.onchange = async e => {
+      const files = Array.from(e.target.files);
+      const data = getAll();
+      for (const f of files) {
+        const src = await toBase64(f);
+        data.unshift({
+          name: f.name,
+          src: src,
+          type: "product"
+        });
       }
+      save(data);
+      render();
+    };
+
+    // 搜索
+    search.oninput = () => {
+      currentKeyword = search.value;
+      render();
+    };
+
+    // 类目切换
+    tags.forEach(t => {
+      t.onclick = () => {
+        tags.forEach(x => x.classList.remove('active'));
+        t.classList.add('active');
+        currentCate = t.dataset.cate;
+        render();
+      };
     });
 
-    // 监听热门搜索点击
-    document.querySelectorAll('.popular-tag').forEach(tag => {
-      tag.addEventListener('click', () => {
-        searchInput.value = tag.textContent.replace(/ 🔥|火/g, '').trim();
-        renderResults(searchInput.value);
-      });
-    });
+    // 以图搜图
+    searchByImg.onclick = () => imgSearchInput.click();
+    imgSearchInput.onchange = async e => {
+      const file = e.target.files[0];
+      if (!file) return;
+      currentKeyword = file.name.split('.')[0];
+      search.value = currentKeyword;
+      render();
+    };
 
-    // 以图搜图（保留原有逻辑，这里简化为上传后显示所有）
-    const searchByImgIcon = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-    searchByImgIcon.setAttribute("class", "camera-icon");
-    searchByImgIcon.setAttribute("viewBox", "0 0 24 24");
-    searchByImgIcon.innerHTML = '<path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle>';
-    searchInput.parentNode.appendChild(searchByImgIcon);
-    searchByImgIcon.style.position = "absolute";
-    searchByImgIcon.style.right = "60px";
-    searchByImgIcon.style.top = "50%";
+    render();
+  </script>
+</body>
+</html>
