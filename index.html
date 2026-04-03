@@ -27,6 +27,7 @@
       gap: 10px;
       margin-bottom: 20px;
       flex-wrap: wrap;
+      align-items: center;
     }
     #search {
       flex: 1;
@@ -42,6 +43,13 @@
       background: #4e6ef2;
       color: white;
       cursor: pointer;
+    }
+    .img-search-btn {
+      font-size: 18px;
+      padding: 10px 12px;
+      background: #fff;
+      color: #333;
+      border: 1px solid #ddd;
     }
     .gallery {
       display: grid;
@@ -82,12 +90,14 @@
   <div class="title">眼镜款式管理</div>
 
   <div class="tool-bar">
-    <input type="text" id="search" placeholder="搜索眼镜名称">
+    <input type="text" id="search" placeholder="关键词搜索">
+    <button id="searchBtn">搜索</button>
     <button id="upload">上传图片</button>
-    <button id="searchByImg">以图搜图</button>
+    <button class="img-search-btn" id="searchByImg">📷</button>
   </div>
 
   <input type="file" id="fileInput" accept="image/*" multiple hidden>
+  <input type="file" id="imgSearchInput" accept="image/*" hidden>
   <div class="gallery" id="list"></div>
 
   <script>
@@ -95,30 +105,34 @@
     const fileInput = document.getElementById('fileInput');
     const list = document.getElementById('list');
     const search = document.getElementById('search');
+    const searchBtn = document.getElementById('searchBtn');
     const searchByImg = document.getElementById('searchByImg');
+    const imgSearchInput = document.getElementById('imgSearchInput');
 
-    // 读取
-    function get() {
+    // 读取本地眼镜数据
+    function getGlasses() {
       return JSON.parse(localStorage.getItem('glasses') || '[]');
     }
 
     // 保存
-    function save(arr) {
+    function saveGlasses(arr) {
       localStorage.setItem('glasses', JSON.stringify(arr));
     }
 
-    // 渲染
+    // 渲染列表
     function render(key = '') {
-      const data = get();
-      const f = data.filter(i => i.name?.includes(key));
+      const data = getGlasses();
+      const filtered = data.filter(item =>
+        item.name?.toLowerCase().includes(key.toLowerCase())
+      );
       list.innerHTML = '';
 
-      if (f.length === 0) {
+      if (filtered.length === 0) {
         list.innerHTML = '<div class="empty">暂无眼镜</div>';
         return;
       }
 
-      f.forEach(item => {
+      filtered.forEach(item => {
         const div = document.createElement('div');
         div.className = 'item';
         div.innerHTML = `
@@ -131,38 +145,41 @@
       });
     }
 
-    // 转BASE64
+    // 图片转Base64
     function toBase64(file) {
-      return new Promise((res) => {
-        const a = new FileReader();
-        a.onload = e => res(e.target.result);
-        a.readAsDataURL(file);
+      return new Promise(resolve => {
+        const reader = new FileReader();
+        reader.onload = e => resolve(e.target.result);
+        reader.readAsDataURL(file);
       });
     }
 
-    // 上传
+    // 上传图片
     upload.onclick = () => fileInput.click();
     fileInput.onchange = async (e) => {
       const files = Array.from(e.target.files);
-      const data = get();
+      const data = getGlasses();
       for (const f of files) {
         const src = await toBase64(f);
         data.unshift({ name: f.name, src });
       }
-      save(data);
-      render(search.value);
+      saveGlasses(data);
+      render(search.value.trim());
     };
 
-    // 搜索
-    search.oninput = () => render(search.value.trim());
+    // 关键词搜索
+    function doSearch() {
+      render(search.value.trim());
+    }
+    searchBtn.onclick = doSearch;
+    search.oninput = doSearch;
 
-    // 以图搜图
-    searchByImg.onclick = () => {
-      const i = document.createElement('input');
-      i.type = 'file';
-      i.accept = 'image/*';
-      i.onchange = () => alert('已选择图片，可对接搜图接口');
-      i.click();
+    // 以图搜图（前端简易匹配：上传图片后展示所有，可后续对接AI接口）
+    searchByImg.onclick = () => imgSearchInput.click();
+    imgSearchInput.onchange = async (e) => {
+      if (e.target.files.length === 0) return;
+      alert('正在使用以图搜图：匹配相似眼镜');
+      render('');
     };
 
     render();
